@@ -1,0 +1,10 @@
+services:
+  api:
+    build: ./backend
+    container_name: discord_awards_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app  # Sincroniza seu código local com o container
+    environment:
+      - DATABASE_URL=sqlite:///./awards.db
