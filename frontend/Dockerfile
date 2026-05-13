@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala as dependências
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Instala o Angular CLI globalmente para facilitar
 RUN npm install -g @angular/cli
