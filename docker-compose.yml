@@ -8,3 +8,14 @@ services:
       - ./backend:/app  # Sincroniza seu código local com o container
     environment:
       - DATABASE_URL=sqlite:///./awards.db
+  
+  web:
+    build: ./frontend
+    container_name: discord_awards_web
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Evita que o volume sobrescreva os pacotes instalados no container
+    depends_on:
+      - api
