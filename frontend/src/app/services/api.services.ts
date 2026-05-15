@@ -6,13 +6,17 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  // URL do seu container FastAPI
   private apiUrl = 'http://localhost:8000';
 
   constructor(private http: HttpClient) { }
 
-  // Método para testar a conexão com o endpoint "/"
-  getPing(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/`);
+  // Busca todas as categorias cadastradas
+  getCategorias(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/categorias/`);
+  }
+
+  // Cria uma nova categoria
+  criarCategoria(categoria: { nome: string, descricao?: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/categorias/`, categoria);
   }
 }

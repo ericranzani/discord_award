@@ -4,21 +4,27 @@ import { ApiService } from './services/api.services';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class AppComponent implements OnInit {
+  categorias: any[] = [];
+
   constructor(private apiService: ApiService) {}
-  
+
   ngOnInit(): void {
-    this.apiService.getPing().subscribe({
-      next: (response) => {
-        console.log('Conexão com a API bem-sucedida:', response);
+    this.carregarCategorias();
+  }
+
+  carregarCategorias() {
+    this.apiService.getCategorias().subscribe({
+      next: (data) => {
+        this.categorias = data;
+        console.log('Categorias carregadas:', data);
       },
-      error: (error) => {
-        console.error('Erro ao conectar com a API:', error);
-      }
+      error: (err) => console.error('Erro ao buscar categorias:', err)
     });
   }
 }

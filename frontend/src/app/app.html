@@ -1,1 +1,15 @@
-<h1>Discord Awards - Frontend</h1> <router-outlet></router-outlet>
+<div style="padding: 20px; font-family: sans-serif;">
+  <h1>🏆 Discord Awards</h1>
+  <hr>
+
+  <h3>Categorias Atuais</h3>
+  <ul>
+    @for (cat of categorias; track cat.id) {
+      <li>
+        <strong>{{ cat.nome }}</strong> - {{ cat.descricao || 'Sem descrição' }}
+      </li>
+    } @empty {
+      <li>Nenhuma categoria cadastrada ainda.</li>
+    }
+  </ul>
+</div>
