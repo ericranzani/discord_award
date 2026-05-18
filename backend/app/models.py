@@ -18,6 +18,7 @@ class Candidato(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     categoria_id = Column(Integer, ForeignKey("categorias.id"))
+    imagem_url = Column(String, nullable=True)
 
     # Relacionamento: O candidato pertence a uma categoria
     categoria = relationship("Categoria", back_populates="candidatos")

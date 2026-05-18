@@ -12,6 +12,7 @@ class CandidatoCreate(CandidatoBase):
 class Candidato(CandidatoBase):
     id: int
     categoria_id: int
+    imagem_url: Optional[str] = None
 
     class Config:
         from_attributes = True # Permite que o Pydantic leia modelos do SQLAlchemy
