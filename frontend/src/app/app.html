@@ -12,8 +12,8 @@
   </div>
 
   <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>Novo Candidato</h3>
-    <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 97%; padding: 8px; margin-bottom: 10px;">
+    <h3>Novo Candidato (Com Foto)</h3>
+    <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 100%; padding: 8px; margin-bottom: 10px;">
     
     <select [(ngModel)]="categoriaSelecionada" style="width: 100%; padding: 8px; margin-bottom: 10px;">
       <option [ngValue]="null" disabled>Selecione a Categoria</option>
@@ -22,8 +22,10 @@
       }
     </select>
 
+    <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 15px; display: block;">
+
     <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      Vincular Candidato
+      Salvar Candidato
     </button>
   </div>
 
@@ -32,16 +34,25 @@
   <h3>Categorias e Candidatos</h3>
   @for (cat of categorias; track cat.id) {
     <div style="border-left: 4px solid #5865F2; padding-left: 15px; margin-bottom: 20px;">
-      <strong>{{ cat.nome }}</strong>
-      <p><small>{{ cat.descricao }}</small></p>
+      <strong style="font-size: 1.2em;">{{ cat.nome }}</strong>
+      <p style="margin: 5px 0;"><small style="color: #666;">{{ cat.descricao }}</small></p>
       
-      <ul>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
         @for (cand of cat.candidatos; track cand.id) {
-          <li>👤 {{ cand.nome }}</li>
+          <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; width: 120px;">
+            
+            @if (cand.imagem_url) {
+              <img [src]="cand.imagem_url" alt="{{ cand.nome }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;">
+            } @else {
+              <div style="font-size: 2.5em; margin-bottom: 5px;">👤</div>
+            }
+            
+            <span style="font-weight: 500; font-size: 0.9em;">{{ cand.nome }}</span>
+          </div>
         } @empty {
-          <li><small>Nenhum candidato nesta categoria.</small></li>
+          <p style="color: #999; font-size: 0.9em;">Nenhum candidato nesta categoria.</p>
         }
-      </ul>
+      </div>
     </div>
   }
 

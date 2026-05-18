@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   novaDescricao: string = '';
   novoNomeCandidato: string = '';
   categoriaSelecionada: number | null = null;
+  fotoSelecionada: File | null = null;
 
   constructor(private apiService: ApiService) {}
 
@@ -48,14 +49,31 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Função para capturar a foto quando o usuário escolher o arquivo
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.fotoSelecionada = file;
+    }
+  }
+
   salvarCandidato() {
     if (!this.novoNomeCandidato || !this.categoriaSelecionada) return;
 
-    this.apiService.criarCandidato(this.novoNomeCandidato, this.categoriaSelecionada).subscribe({
+    this.apiService.criarCandidato(
+      this.novoNomeCandidato, 
+      this.categoriaSelecionada, 
+      this.fotoSelecionada
+    ).subscribe({
       next: () => {
-        this.carregarCategorias(); // Recarrega para mostrar o candidato na lista
-        this.novoNomeCandidato = '';
-      }
+        this.carregarCategorias(); // Recarrega a lista atualizada
+        this.novoNomeCandidato = ''; // Limpa os campos
+        this.fotoSelecionada = null;
+        // Truque para limpar o campo de arquivo no HTML
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      },
+      error: (err) => console.error('Erro ao salvar candidato:', err)
     });
   }
 }

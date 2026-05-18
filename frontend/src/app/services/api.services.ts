@@ -20,7 +20,17 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/categorias/`, categoria);
   }
 
-  criarCandidato(nome: string, categoriaId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/candidatos/`, { nome, categoria_id: categoriaId });
+  criarCandidato(nome: string, categoriaId: number, arquivoImagem: File | null): Observable<any> {
+    const formData = new FormData();
+    
+    // O FastAPI espera exatamente estes nomes nos campos
+    formData.append('nome', nome);
+    formData.append('categoria_id', categoriaId.toString());
+    
+    if (arquivoImagem) {
+      formData.append('file', arquivoImagem, arquivoImagem.name);
+    }
+
+    return this.http.post(`${this.apiUrl}/candidatos/`, formData);
   }
 }
