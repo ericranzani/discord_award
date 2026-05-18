@@ -19,4 +19,8 @@ export class ApiService {
   criarCategoria(categoria: { nome: string, descricao?: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/categorias/`, categoria);
   }
+
+  criarCandidato(nome: string, categoriaId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/candidatos/`, { nome, categoria_id: categoriaId });
+  }
 }

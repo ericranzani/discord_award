@@ -45,13 +45,13 @@ def listar_categorias(db: Session = Depends(get_db)):
 
 # Rota para Adicionar Candidato a uma Categoria
 @app.post("/candidatos/", response_model=schemas.Candidato)
-def criar_candidato(candidato: schemas.CandidatoCreate, categoria_id: int, db: Session = Depends(get_db)):
+def criar_candidato(candidato: schemas.CandidatoCreate, db: Session = Depends(get_db)):
     # Verifica se a categoria existe antes de adicionar o candidato
-    db_categoria = db.query(models.Categoria).filter(models.Categoria.id == categoria_id).first()
+    db_categoria = db.query(models.Categoria).filter(models.Categoria.id == candidato.categoria_id).first()
     if not db_categoria:
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
     
-    db_candidato = models.Candidato(nome=candidato.nome, categoria_id=categoria_id)
+    db_candidato = models.Candidato(nome=candidato.nome, categoria_id=candidato.categoria_id)
     db.add(db_candidato)
     db.commit()
     db.refresh(db_candidato)

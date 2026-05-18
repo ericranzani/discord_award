@@ -1,15 +1,57 @@
-<div style="padding: 20px; font-family: sans-serif;">
+<div style="padding: 20px; max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
   <h1>🏆 Discord Awards</h1>
   <hr>
+
+  <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>Nova Categoria</h3>
+    <input [(ngModel)]="novoNome" placeholder="Nome da Categoria" style="width: 97%; padding: 8px; margin-bottom: 10px;">
+    <input [(ngModel)]="novaDescricao" placeholder="Descrição (opcional)" style="width: 97%; padding: 8px; margin-bottom: 10px;">
+    <button (click) = "salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+      Adicionar Categoria
+    </button>
+  </div>
+
+  <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>Novo Candidato</h3>
+    <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 97%; padding: 8px; margin-bottom: 10px;">
+    
+    <select [(ngModel)]="categoriaSelecionada" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+      <option [ngValue]="null" disabled>Selecione a Categoria</option>
+      @for (cat of categorias; track cat.id) {
+        <option [ngValue]="cat.id">{{ cat.nome }}</option>
+      }
+    </select>
+
+    <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+      Vincular Candidato
+    </button>
+  </div>
+
+  <hr>
+
+  <h3>Categorias e Candidatos</h3>
+  @for (cat of categorias; track cat.id) {
+    <div style="border-left: 4px solid #5865F2; padding-left: 15px; margin-bottom: 20px;">
+      <strong>{{ cat.nome }}</strong>
+      <p><small>{{ cat.descricao }}</small></p>
+      
+      <ul>
+        @for (cand of cat.candidatos; track cand.id) {
+          <li>👤 {{ cand.nome }}</li>
+        } @empty {
+          <li><small>Nenhum candidato nesta categoria.</small></li>
+        }
+      </ul>
+    </div>
+  }
 
   <h3>Categorias Atuais</h3>
   <ul>
     @for (cat of categorias; track cat.id) {
-      <li>
-        <strong>{{ cat.nome }}</strong> - {{ cat.descricao || 'Sem descrição' }}
+      <li style="margin-bottom: 10px;">
+        <strong>{{ cat.nome }}</strong><br>
+        <small style="color: #666;">{{ cat.descricao || 'Sem descrição' }}</small>
       </li>
-    } @empty {
-      <li>Nenhuma categoria cadastrada ainda.</li>
     }
   </ul>
 </div>

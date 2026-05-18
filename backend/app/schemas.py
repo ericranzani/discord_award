@@ -7,7 +7,7 @@ class CandidatoBase(BaseModel):
     nome: str
 
 class CandidatoCreate(CandidatoBase):
-    pass  # Usado para criar um candidato (recebe apenas o nome)
+    categoria_id: int
 
 class Candidato(CandidatoBase):
     id: int
