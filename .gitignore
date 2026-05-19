@@ -1,8 +1,26 @@
-# --- Python / Backend ---
+# Cache do Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ambiente Virtual Python
 venv/
 .venv/
 env/
-awards.db
-__pycache__/
-*.pyc   
-static/
+
+# Banco de Dados Local SQLite
+backend/awards.db
+backend/static
+
+# Arquivos do Angular / Node
+frontend/.angular/
+frontend/dist/
+node_modules/
+.modules/
+
+# Logs e configurações locais de IDEs
+.vscode/
+.idea/
+*.log
+.DS_Store
