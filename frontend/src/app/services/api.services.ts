@@ -47,5 +47,15 @@ export class ApiService {
   getResultados(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/resultados/`);
   }
+
+  // Busca o status atual da votação (aberta/fechada)
+  getStatusVotacao(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/status-votacao/`);
+  }
+
+  // Altera o status da votação (Apenas o admin vai usar)
+  alternarStatusVotacao(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/status-votacao/alternar/`, {});
+  }
 }
 

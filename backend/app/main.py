@@ -1,5 +1,7 @@
 from typing import List
 import os
+import threading
+import time
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -41,6 +43,33 @@ app.add_middleware(
 def read_root():
     return {"message": "API do Discord Awards rodando com sucesso!"}
 
+
+# Função que roda em segundo plano limpando o banco a cada 24 horas
+def rotina_limpeza_24h():
+    while True:
+        # 86400 segundos = 24 horas
+        # Dica para testes: mude para 60 (1 minuto) ou 300 (5 minutos) para ver funcionando!
+        time.sleep(86400) 
+        
+        print("[Limpeza Automática] Iniciando faxina diária no banco de dados...")
+        try:
+            db = next(get_db())
+            
+            # Deleta os votos primeiro por causa das chaves estrangeiras (Foreign Keys)
+            db.query(models.Voto).delete()
+            db.query(models.Candidato).delete()
+            db.query(models.Categoria).delete()
+            
+            # Reseta o status da votação para aberta
+            config = db.query(models.CONFIG_STATUS).first()
+            if config:
+                config.votacao_encerrada = False
+            
+            db.commit()
+            print("[Limpeza Automática] Banco de dados resetado com sucesso!")
+        except Exception as e:
+            print(f"[Limpeza Automática] Erro ao limpar o banco: {e}")
+
 # Inicializa o status no banco se estiver vazio
 @app.on_event("startup")
 def inicializar_status():
@@ -50,6 +79,11 @@ def inicializar_status():
         novo_status = models.CONFIG_STATUS(votacao_encerrada=False)
         db.add(novo_status)
         db.commit()
+
+    # Inicia a thread de limpeza em background
+    thread_limpeza = threading.Thread(target=rotina_limpeza_24h, daemon=True)
+    thread_limpeza.start()
+    print("⏰ [Sistema] Rotina de limpeza agendada para rodar a cada 24 horas.")
 
 # Rota para obter o status atual da votação
 @app.get("/status-votacao/")

@@ -1,79 +1,104 @@
 <div style="padding: 20px; max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
   
   <h1 style="text-align: center;">🏆 Discord Awards</h1>
-  <p style="text-align: center; color: #888;"><small>ID do seu Dispositivo: {{ votanteId }}</small></p>
+  <p style="text-align: center; color: #888;">
+    Status: 
+    <span [style.color]="votacaoEncerradaGlobal ? '#f04747' : '#43b581'" style="font-weight: bold;">
+      {{ votacaoEncerradaGlobal ? '🔴 REVELAÇÃO AO VIVO' : '🟢 VOTAÇÕES ABERTAS' }}
+    </span>
+  </p>
   <hr style="border: 1px solid #eee; margin-bottom: 30px;">
 
-  @if (categorias.length > 0 && !votacaoConcluida) {
+  @if (votacaoEncerradaGlobal) {
+    <h2 style="text-align: center; color: #faa61a; margin-bottom: 25px;">👑 Grandes Vencedores do Ano 👑</h2>
     
-    <div style="background: #2f3136; color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 40px;">
-      <span style="color: #5865F2; font-weight: bold; text-transform: uppercase; font-size: 0.85em;">
-        Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}
-      </span>
-      <h2 style="margin: 5px 0 10px 0; font-size: 1.8em;">{{ categorias[indiceCategoriaAtual].nome }}</h2>
-      <p style="color: #b9bbbe; margin-bottom: 25px; font-style: italic;">
-        "{{ categorias[indiceCategoriaAtual].descricao || 'Sem descrição cadastrada' }}"
-      </p>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
-        @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
-          
-          <div (click)="votarNoCandidato(cand.id)" 
-               style="background: #36393f; border: 2px solid #40444b; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
-               onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#5865F2'"
-               onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#40444b'">
-            
-            @if (cand.imagem_url) {
-              <img [src]="cand.imagem_url" alt="{{ cand.nome }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; border: 3px solid #2f3136;">
+    @for (cat of categorias; track cat.id) {
+      <div style="background: #2f3136; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #faa61a; box-shadow: 0 4px 15px rgba(250, 166, 26, 0.15);">
+        <h3 style="margin: 0 0 5px 0; color: #faa61a;">{{ cat.nome }}</h3>
+        <p style="color: #b9bbbe; margin: 0 0 15px 0; font-size: 0.9em; font-style: italic;">"{{ cat.descricao }}"</p>
+        
+        @if (cat.vencedor) {
+          <div style="display: flex; align-items: center; gap: 20px; background: #36393f; padding: 15px; border-radius: 8px;">
+            @if (cat.vencedor.imagem_url) {
+              <img [src]="cat.vencedor.imagem_url" alt="Vencedor" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 3px solid #faa61a;">
             } @else {
-              <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
+              <div style="font-size: 2.5em;">👑</div>
             }
-            
-            <div style="font-weight: bold; font-size: 1em; word-break: break-word;">{{ cand.nome }}</div>
+            <div>
+              <div style="font-size: 1.2em; font-weight: bold; color: #fff;">{{ cat.vencedor.nome }}</div>
+              <div style="color: #43b581; font-size: 0.9em; font-weight: 500;">🥇 {{ cat.vencedor.votos }} votos computados</div>
+            </div>
           </div>
-
-        } @empty {
-          <p style="color: #b9bbbe; text-align: center; grid-column: 1/-1;">Nenhum candidato nesta categoria.</p>
+        } @else {
+          <p style="color: #666; margin: 0; font-size: 0.9em;">Nenhum voto computado nesta categoria.</p>
         }
       </div>
-    </div>
-
-  } @else if (votacaoConcluida) {
-    
-    <div style="background: #43b581; color: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 40px;">
-      <h2 style="margin-top: 0;">🎉 Votação Concluída!</h2>
-      <p>Seus votos foram computados na nuvem. Agora resta aguardar a revelação ao vivo no servidor!</p>
-    </div>
+    }
 
   } @else {
-    <p style="text-align: center; color: #666;">Nenhuma categoria disponível para votação no momento.</p>
+    @if (categorias.length > 0 && !votacaoConcluida) {
+      <div style="background: #2f3136; color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 40px;">
+        <span style="color: #5865F2; font-weight: bold; text-transform: uppercase; font-size: 0.85em;">
+          Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}
+        </span>
+        <h2 style="margin: 5px 0 10px 0; font-size: 1.8em;">{{ categorias[indiceCategoriaAtual].nome }}</h2>
+        <p style="color: #b9bbbe; margin-bottom: 25px; font-style: italic;">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+          @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
+            <div (click)="votarNoCandidato(cand.id)" 
+                 style="background: #36393f; border: 2px solid #40444b; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
+                 onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#5865F2'"
+                 onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#40444b'">
+              @if (cand.imagem_url) {
+                <img [src]="cand.imagem_url" alt="Candidato" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; border: 3px solid #2f3136;">
+              } @else {
+                <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
+              }
+              <div style="font-weight: bold; font-size: 1em;">{{ cand.nome }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else if (votacaoConcluida) {
+      <div style="background: #43b581; color: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 40px;">
+        <h2 style="margin-top: 0;">🎉 Votação Concluída!</h2>
+        <p>Seus votos foram enviados. Aguarde o anúncio oficial no Discord para ver os vencedores!</p>
+      </div>
+    }
   }
 
-
   <details style="background: #f8f9fa; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-top: 50px;">
-    <summary style="cursor: pointer; font-weight: bold; color: #555;">⚙️ Painel de Controle (Cadastros)</summary>
+    <summary style="cursor: pointer; font-weight: bold; color: #555;">⚙️ Painel de Controle Secreto</summary>
     <div style="margin-top: 15px;">
       
+      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+        <h5 style="margin: 0 0 10px 0;">Controle do Evento Principal</h5>
+        <button (click)="alternarFechamentoEvento()" 
+                [style.background]="votacaoEncerradaGlobal ? '#43b581' : '#f04747'" 
+                style="color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+          {{ votacaoEncerradaGlobal ? '🔓 Reabrir Votações' : '🔒 Encerrar Votações e Revelar Vencedores!' }}
+        </button>
+      </div>
+
       <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px;">
-        <h4>+ Adicionar Nova Categoria</h4>
-        <input [(ngModel)]="novoNome" placeholder="Nome da Categoria" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        <input [(ngModel)]="novaDescricao" placeholder="Descrição (opcional)" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        <button (click)="salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar Categoria</button>
+        <h4>+ Nova Categoria</h4>
+        <input [(ngModel)]="novoNome" placeholder="Nome" style="width: 95%; padding: 8px; margin-bottom: 10px;">
+        <input [(ngModel)]="novaDescricao" placeholder="Descrição" style="width: 95%; padding: 8px; margin-bottom: 10px;">
+        <button (click)="salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Salvar</button>
       </div>
 
       <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px;">
-        <h4>+ Vincular Candidato com Imagem</h4>
-        <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        
+        <h4>+ Novo Candidato</h4>
+        <input [(ngModel)]="novoNomeCandidato" placeholder="Nome" style="width: 95%; padding: 8px; margin-bottom: 10px;">
         <select [(ngModel)]="categoriaSelecionada" style="width: 98%; padding: 8px; margin-bottom: 10px;">
           <option [ngValue]="null" disabled>Selecione a Categoria</option>
           @for (cat of categorias; track cat.id) {
             <option [ngValue]="cat.id">{{ cat.nome }}</option>
           }
         </select>
-
-        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px; display: block;">
-        <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar Candidato</button>
+        <input type="file" id="fileInput" (change Rama)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px;">
+        <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Salvar</button>
       </div>
 
     </div>

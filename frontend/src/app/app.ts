@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
 
   indiceCategoriaAtual: number = 0;
   votacaoConcluida: boolean = false;
+  votacaoEncerradaGlobal: boolean = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -42,9 +43,26 @@ export class AppComponent implements OnInit {
     this.votanteId = id;
   }
 
+  // Verifica se o evento acabou e traz os dados atualizados
+  verificarStatusERecarregar() {
+    this.apiService.getStatusVotacao().subscribe({
+      next: (status) => {
+        this.votacaoEncerradaGlobal = status.votacao_encerrada;
+        this.carregarCategorias();
+      },
+      error: (err) => console.error('Erro ao buscar status da votação:', err)
+    });
+  }
+
   carregarCategorias() {
     this.apiService.getCategorias().subscribe({
-      next: (data) => this.categorias = data,
+      next: (data) => {
+        this.categorias = data;
+        // Se a lista vier do backend dizendo que está encerrada, sincroniza o layout
+        if (data.length > 0 && data[0].votacao_encerrada) {
+          this.votacaoEncerradaGlobal = true;
+        }
+      },
       error: (err) => console.error('Erro ao buscar categorias:', err)
     });
   }
@@ -72,6 +90,16 @@ export class AppComponent implements OnInit {
     } else {
       this.votacaoConcluida = true;
     }
+  }
+
+  alternarFechamentoEvento() {
+    this.apiService.alternarStatusVotacao().subscribe({
+      next: (res) => {
+        this.votacaoEncerradaGlobal = res.votacao_encerrada;
+        this.verificarStatusERecarregar(); // Força o recalculo e puxa os vencedores
+      },
+      error: (err) => console.error('Erro ao alterar estado do evento:', err)
+    });
   }
 
   // Função para capturar a foto quando o usuário escolher o arquivo
