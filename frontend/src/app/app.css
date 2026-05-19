@@ -1,0 +1,263 @@
+/* --- VARIÁVEIS DE COR E PADRONIZAÇÃO --- */
+:host {
+  --bg-main: #202225;
+  --bg-card: #2f3136;
+  --bg-inner: #36393f;
+  --bg-hover: #40444b;
+  --color-text: #f6f6f7;
+  --color-muted: #b9bbbe;
+  --color-discord: #5865F2;
+  --color-success: #43b581;
+  --color-danger: #f04747;
+  --color-gold: #faa61a;
+}
+
+/* --- GRID ESTRUTURAL (1fr 2fr 1fr) --- */
+.app-container {
+  display: grid;
+  grid-template-columns: 1fr minmax(auto, 800px) 1fr;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--color-text);
+}
+
+.content-center {
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- CABEÇALHO COM TIPOGRAFIA FLUIDA --- */
+.main-header {
+  text-align: center;
+}
+
+.main-header h1 {
+  font-size: 2.5rem; /* Baseado no rem fluido do styles.css */
+  margin: 0 0 0.5rem 0;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.main-header p {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.status-badge { font-weight: bold; }
+.status-badge.aberto { color: var(--color-success); }
+.status-badge.encerrado { color: var(--color-danger); }
+
+/* --- MENU DE NAVEGAÇÃO (ABAS) --- */
+.tabs-nav {
+  display: flex;
+  background: var(--bg-card);
+  padding: 0.4rem;
+  border-radius: 8px;
+  gap: 0.4rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tab-button {
+  flex: 1;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-muted);
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-button.active {
+  background: var(--color-discord);
+  color: #ffffff;
+}
+
+.tab-button:hover:not(.active) {
+  background: var(--bg-hover);
+  color: #fff;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: var(--bg-hover);
+}
+
+/* --- ESTRUTURAS DE CARDS MUTÁVEIS --- */
+.card-base {
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: flex;             
+  flex-direction: column;    
+}
+
+.card-base h3 {
+  margin: 0 0 1rem 0; /* Controla o espaço entre o "+ Cadastrar" e o primeiro Input */
+  color: #fff;
+  font-size: 1.4rem;
+}
+
+.card-podium {
+  border: 2px solid var(--color-gold);
+  box-shadow: 0 4px 15px rgba(250, 166, 26, 0.15);
+}
+
+.section-title { 
+  font-size: 1.5rem; 
+  margin: 0 0 0.2rem 0; /* Reduzido de 0.5rem para aproximar do subtítulo */
+  color: #fff; 
+}
+
+.podium-title { 
+    font-size: 1.5rem; 
+    margin: 0 0 0.5rem 0; 
+    color: var(--color-gold); 
+}
+
+.section-subtitle { 
+  color: var(--color-muted); 
+  font-size: 1rem; 
+  margin: 0 0 1.2rem 0; /* Diminuído para aproximar do conteúdo abaixo */
+}
+
+/* --- URNA DE VOTAÇÃO (MÁXIMO 3 COLUNAS) --- */
+.category-indicator {
+  color: var(--color-discord);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.category-title { margin: 0.5rem 0; font-size: 2rem; color: #ffffff; }
+.category-desc { color: var(--color-muted); margin-bottom: 2rem; font-size: 1.1rem; font-style: italic; }
+
+.candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Fixado em no máximo 3 colunas */
+  gap: 1.2rem;
+}
+
+.candidate-vote-card {
+  background: var(--bg-inner);
+  border: 2px solid var(--bg-hover);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.candidate-vote-card:hover {
+  transform: scale(1.04);
+  border-color: var(--color-discord);
+  background: var(--bg-hover);
+}
+
+/* --- IMAGENS E AVATARES --- */
+.avatar-large {
+  width: 6.5rem;
+  height: 6.5rem;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 0 auto 1rem auto;
+  display: block;
+  border: 4px solid var(--bg-card);
+}
+
+.candidate-name { font-weight: bold; font-size: 1.1rem; color: #fff; }
+
+/* --- LISTAS, FEEDBACKS E SUCESSO --- */
+.winner-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--bg-inner);
+  padding: 1.2rem;
+  border-radius: 8px;
+}
+
+.avatar-winner { width: 5.5rem; height: 5.5rem; object-fit: cover; border-radius: 50%; border: 3px solid var(--color-gold); }
+.winner-name { font-size: 1.3rem; font-weight: bold; color: #fff; }
+.winner-votes { color: var(--color-success); font-size: 1rem; font-weight: 600; margin-top: 0.3rem; }
+
+.list-candidates-wrapper { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.candidate-list-badge {
+  background: var(--bg-inner);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid var(--bg-hover);
+}
+.avatar-small { width: 2.5rem; height: 2.5rem; object-fit: cover; border-radius: 50%; }
+
+.success-banner {
+  background: var(--color-success);
+  color: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.success-banner h2 { margin-top: 0; font-size: 1.8rem; }
+.success-banner p { font-size: 1.1rem; }
+
+/* --- COMPONENTES DE BOTÕES E FORMULÁRIOS --- */
+.admin-control-box { background: var(--bg-inner); padding: 1.5rem; border: 1px solid #4f545c; border-radius: 12px; margin-bottom: 1.5rem; text-align: center; }
+.admin-control-box h4 { margin: 0 0 1rem 0; font-size: 1.1rem; color: #fff; }
+
+.input-discord {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--bg-main);
+  background: var(--bg-main);
+  color: #fff;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.input-discord:focus { outline: none; border-color: var(--color-discord); }
+
+/* VARIANTES DE BOTÕES UTILIZANDO AS VARIÁVEIS */
+.btn-block { width: 100%; border: none; padding: 0.9rem; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s ease; }
+.btn-inline { border: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: background 0.2s ease; }
+
+.btn-primary { background-color: var(--color-discord); color: white; }
+.btn-primary:hover { background-color: #4752c4; }
+.btn-success { background-color: var(--color-success); color: white; }
+.btn-success:hover { background-color: #3ca374; }
+.btn-danger { background-color: var(--color-danger); color: white; }
+.btn-danger:hover { background-color: #d83a3a; }
+.btn-link-share { background-color: #7289da; color: white; }
+.btn-link-share:hover { background-color: #5b73c7; }
+
+.no-data-text { text-align: center; color: #72767d; font-size: 1.1rem; }
+
+/* --- 📱 RESPONSIVIDADE E ADAPTAÇÃO DE TELA --- */
+@media (max-width: 768px) {
+  .app-container {
+    grid-template-columns: 0px 1fr 0px; /* Remove as colunas vazias em telas menores */
+  }
+  .candidates-grid {
+    grid-template-columns: repeat(2, 1fr); /* Vira 2 colunas em tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  .candidates-grid {
+    grid-template-columns: 1fr; /* Vira 1 coluna em celulares verticais */
+  }
+  .content-center { padding: 1rem 0.5rem; }
+  .tab-button { padding: 0.6rem; font-size: 0.9rem; }
+}

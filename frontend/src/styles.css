@@ -1,1 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
+/* Limpa os padrões do navegador para que o fundo escuro ocupe tudo */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #202225;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Configura a fonte base fluida: se adapta à largura da tela */
+  font-size: calc(14px + 0.3vw); 
+}
+
+/* Garante que o componente do Angular preencha a tela */
+app-root {
+  display: block;
+  min-height: 100vh;
+}

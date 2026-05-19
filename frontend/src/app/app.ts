@@ -6,7 +6,7 @@ import { ApiService } from './services/api.services';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
   votacaoConcluida: boolean = false;
   votacaoEncerradaGlobal: boolean = false;
   linkCopiadoFeedback: boolean = false;
+  abaAtiva: 'votar' | 'visualizar' | 'criar' = 'votar';
 
   constructor(private apiService: ApiService) {}
 

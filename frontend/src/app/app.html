@@ -1,113 +1,165 @@
-<div style="padding: 20px; max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<div class="app-container">
   
-  <h1 style="text-align: center;">🏆 Discord Awards</h1>
-  <p style="text-align: center; color: #888;">
-    Status: 
-    <span [style.color]="votacaoEncerradaGlobal ? '#f04747' : '#43b581'" style="font-weight: bold;">
-      {{ votacaoEncerradaGlobal ? '🔴 REVELAÇÃO AO VIVO' : '🟢 VOTAÇÕES ABERTAS' }}
-    </span>
-  </p>
-  <hr style="border: 1px solid #eee; margin-bottom: 30px;">
+  <div></div>
 
-  @if (votacaoEncerradaGlobal) {
-    <h2 style="text-align: center; color: #faa61a; margin-bottom: 25px;">👑 Grandes Vencedores do Ano 👑</h2>
+  <div class="content-center">
     
-    @for (cat of categorias; track cat.id) {
-      <div style="background: #2f3136; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #faa61a; box-shadow: 0 4px 15px rgba(250, 166, 26, 0.15);">
-        <h3 style="margin: 0 0 5px 0; color: #faa61a;">{{ cat.nome }}</h3>
-        <p style="color: #b9bbbe; margin: 0 0 15px 0; font-size: 0.9em; font-style: italic;">"{{ cat.descricao }}"</p>
+    <header class="main-header">
+      <h1>🏆 Discord Awards</h1>
+      <p>
+        Status: 
+        <span class="status-badge" 
+              [class.encerrado]="votacaoEncerradaGlobal" 
+              [class.aberto]="!votacaoEncerradaGlobal">
+          {{ votacaoEncerradaGlobal ? '🔴 REVELAÇÃO AO VIVO' : '🟢 VOTAÇÕES ABERTAS' }}
+        </span>
+      </p>
+    </header>
+
+    <nav class="tabs-nav">
+      <button (click)="abaAtiva = 'votar'" class="tab-button" [class.active]="abaAtiva === 'votar'">🗳️ Votar</button>
+      <button (click)="abaAtiva = 'visualizar'" class="tab-button" [class.active]="abaAtiva === 'visualizar'">👁️ Visualizar Enquetes</button>
+      <button (click)="abaAtiva = 'criar'" class="tab-button" [class.active]="abaAtiva === 'criar'">⚙️ Painel de Criação</button>
+    </nav>
+
+    <div class="divider"></div>
+
+    @if (abaAtiva === 'votar') {
+      @if (votacaoEncerradaGlobal) {
+        <h2 style="text-align: center; color: #faa61a; font-size: 2em; margin-bottom: 20px;">👑 Grandes Vencedores do Ano 👑</h2>
         
-        @if (cat.vencedor) {
-          <div style="display: flex; align-items: center; gap: 20px; background: #36393f; padding: 15px; border-radius: 8px;">
-            @if (cat.vencedor.imagem_url) {
-              <img [src]="cat.vencedor.imagem_url" alt="Vencedor" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 3px solid #faa61a;">
+        @for (cat of categorias; track cat.id) {
+          <div class="card-podium">
+            <h3 class="podium-title">{{ cat.nome }}</h3>
+            <p class="section-subtitle">"{{ cat.descricao }}"</p>
+            
+            @if (cat.vencedor) {
+              <div class="winner-row">
+                @if (cat.vencedor.imagem_url) {
+                  <img [src]="cat.vencedor.imagem_url" alt="Vencedor" class="avatar-winner">
+                } @else {
+                  <div style="font-size: 3.5em; padding-left: 10px;">👑</div>
+                }
+                <div>
+                  <div class="winner-name">{{ cat.vencedor.nome }}</div>
+                  <div class="winner-votes">🥇 {{ cat.vencedor.votos }} votos computados</div>
+                </div>
+              </div>
             } @else {
-              <div style="font-size: 2.5em;">👑</div>
+              <p class="no-data-text" style="text-align: left;">Nenhum voto computado nesta categoria.</p>
             }
-            <div>
-              <div style="font-size: 1.2em; font-weight: bold; color: #fff;">{{ cat.vencedor.nome }}</div>
-              <div style="color: #43b581; font-size: 0.9em; font-weight: 500;">🥇 {{ cat.vencedor.votos }} votos computados</div>
+          </div>
+        }
+      } @else {
+        @if (categorias.length > 0 && !votacaoConcluida) {
+          <div class="card-base">
+            <span class="category-indicator">Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}</span>
+            <h2 class="category-title">{{ categorias[indiceCategoriaAtual].nome }}</h2>
+            <p class="category-desc">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
+
+            <div class="candidates-grid">
+              @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
+                <div (click)="votarNoCandidato(cand.id)" class="candidate-vote-card">
+                  @if (cand.imagem_url) {
+                    <img [src]="cand.imagem_url" alt="Candidato" class="avatar-large">
+                  } @else {
+                    <div style="font-size: 3.5em; margin-bottom: 15px;">👤</div>
+                  }
+                  <div class="candidate-name">{{ cand.nome }}</div>
+                </div>
+              }
             </div>
           </div>
+        } @else if (votacaoConcluida) {
+          <div class="success-banner">
+            <h2>🎉 Votação Concluída!</h2>
+            <p>Seus votos foram computados na nuvem. Aguarde o comando do Admin para ver os resultados ao vivo!</p>
+          </div>
         } @else {
-          <p style="color: #666; margin: 0; font-size: 0.9em;">Nenhum voto computado nesta categoria.</p>
+          <p class="no-data-text">Nenhuma categoria disponível para votação no momento.</p>
         }
-      </div>
+      }
     }
 
-  } @else {
-    @if (categorias.length > 0 && !votacaoConcluida) {
-      <div style="background: #2f3136; color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 40px;">
-        <span style="color: #5865F2; font-weight: bold; text-transform: uppercase; font-size: 0.85em;">
-          Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}
-        </span>
-        <h2 style="margin: 5px 0 10px 0; font-size: 1.8em;">{{ categorias[indiceCategoriaAtual].nome }}</h2>
-        <p style="color: #b9bbbe; margin-bottom: 25px; font-style: italic;">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
+    @if (abaAtiva === 'visualizar') {
+      <h2 class="section-title">👀 Enquetes Cadastradas</h2>
+      <p class="section-subtitle">Veja abaixo como está ficando a lista completa de categorias e seus respectivos candidatos.</p>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
-          @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
-            <div (click)="votarNoCandidato(cand.id)" 
-                 style="background: #36393f; border: 2px solid #40444b; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
-                 onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#5865F2'"
-                 onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#40444b'">
-              @if (cand.imagem_url) {
-                <img [src]="cand.imagem_url" alt="Candidato" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; border: 3px solid #2f3136;">
-              } @else {
-                <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
-              }
-              <div style="font-weight: bold; font-size: 1em;">{{ cand.nome }}</div>
-            </div>
-          }
+      @if (categorias.length === 0) {
+        <p class="no-data-text">Nenhuma enquete cadastrada até o momento.</p>
+      }
+
+      @for (cat of categorias; track cat.id) {
+        <div class="card-base" style="margin-bottom: 25px;">
+          <h3 style="margin: 0 0 5px 0; font-size: 1.6em;">{{ cat.nome }}</h3>
+          <p class="section-subtitle" style="margin-bottom: 20px;">"{{ cat.descricao }}"</p>
+          
+          <div class="list-candidates-wrapper">
+            @for (cand of cat.candidatos; track cand.id) {
+              <div class="candidate-list-badge">
+                @if (cand.imagem_url) {
+                  <img [src]="cand.imagem_url" alt="Candidato" class="avatar-small">
+                } @else {
+                  <span style="font-size: 1.5em;">👤</span>
+                }
+                <span style="font-weight: 600; font-size: 1.1em;">{{ cand.nome }}</span>
+              </div>
+            } @empty {
+              <p class="no-data-text" style="font-size: 1em; text-align: left;">Nenhum candidato cadastrado.</p>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (abaAtiva === 'criar') {
+      <h2 class="section-title">⚙️ Painel de Controle Administrativo</h2>
+      <p class="section-subtitle">Gerencie o andamento das votações e faça novos cadastros.</p>
+
+      <div class="admin-control-box">
+        <h4>Status Global da Sessão</h4>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button (click)="gerarECopiarLinkVotacao()" 
+                  [class.btn-success]="linkCopiadoFeedback" 
+                  [class.btn-link-share]="!linkCopiadoFeedback"
+                  class="btn-block">
+            {{ linkCopiadoFeedback ? '✅ Link Copiado para o Clipboard!' : '🔗 Gerar e Copiar Link de Votação' }}
+          </button>
+
+          <button (click)="alternarFechamentoEvento()" 
+                  [class.btn-success]="votacaoEncerradaGlobal" 
+                  [class.btn-danger]="!votacaoEncerradaGlobal"
+                  class="btn-block">
+            {{ votacaoEncerradaGlobal ? '🔓 Reabrir Votações' : '🔒 Encerrar Votações e Revelar Vencedores!' }}
+          </button>
         </div>
       </div>
-    } @else if (votacaoConcluida) {
-      <div style="background: #43b581; color: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 40px;">
-        <h2 style="margin-top: 0;">🎉 Votação Concluída!</h2>
-        <p>Seus votos foram enviados. Aguarde o anúncio oficial no Discord para ver os vencedores!</p>
-      </div>
-    }
-  }
 
-  <details style="background: #f8f9fa; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-top: 50px;">
-    <summary style="cursor: pointer; font-weight: bold; color: #555;">⚙️ Painel de Controle Secreto</summary>
-    <div style="margin-top: 15px;">
-      
-      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; text-align: center;">
-        <h5 style="margin: 0 0 10px 0;">Controle do Evento Principal</h5>
-      
-      <button (click)="gerarECopiarLinkVotacao()" 
-                [style.background]="linkCopiadoFeedback ? '#43b581' : '#7289da'" 
-                style="color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; transition: background 0.3s;">
-          {{ linkCopiadoFeedback ? '✅ Link Copiado para a Área de Transferência!' : '🔗 Gerar e Copiar Link de Votação' }}
-        </button>
-
-        <button (click)="alternarFechamentoEvento()" 
-                [style.background]="votacaoEncerradaGlobal ? '#43b581' : '#f04747'" 
-                style="color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
-          {{ votacaoEncerradaGlobal ? '🔓 Reabrir Votações' : '🔒 Encerrar Votações e Revelar Vencedores!' }}
-        </button>
+      <div class="card-base" style="margin-bottom: 25px;">
+        <h3>+ Cadastrar Nova Categoria</h3>
+        <input [(ngModel)]="novoNome" placeholder="Ex: Player mais tóxico, Melhor Clutch do ano..." class="input-discord">
+        <input [(ngModel)]="novaDescricao" placeholder="Descrição ou frase marcante da categoria" class="input-discord">
+        <button (click)="salvarCategoria()" class="btn-inline btn-primary">Salvar Categoria</button>
       </div>
 
-      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px;">
-        <h4>+ Nova Categoria</h4>
-        <input [(ngModel)]="novoNome" placeholder="Nome" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        <input [(ngModel)]="novaDescricao" placeholder="Descrição" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        <button (click)="salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Salvar</button>
-      </div>
-
-      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px;">
-        <h4>+ Novo Candidato</h4>
-        <input [(ngModel)]="novoNomeCandidato" placeholder="Nome" style="width: 95%; padding: 8px; margin-bottom: 10px;">
-        <select [(ngModel)]="categoriaSelecionada" style="width: 98%; padding: 8px; margin-bottom: 10px;">
-          <option [ngValue]="null" disabled>Selecione a Categoria</option>
+      <div class="card-base">
+        <h3>+ Cadastrar Novo Candidato</h3>
+        <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato (ex: BraboRanger)" class="input-discord">
+        
+        <select [(ngModel)]="categoriaSelecionada" class="input-discord" style="cursor: pointer;">
+          <option [ngValue]="null" disabled>Selecione a Categoria Alvo</option>
           @for (cat of categorias; track cat.id) {
             <option [ngValue]="cat.id">{{ cat.nome }}</option>
           }
         </select>
-        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px;">
-        <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Salvar</button>
+        
+        <label style="display: block; margin-bottom: 8px; color: #b9bbbe; font-weight: 600;">Foto do Candidato:</label>
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 20px; font-size: 1em; color: #b9bbbe;">
+        
+        <button (click)="salvarCandidato()" class="btn-inline btn-success">Salvar Candidato</button>
       </div>
-    </div>
-  </details>
+    }
 
+  </div>
+  <div></div>
 </div>
