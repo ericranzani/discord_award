@@ -5,3 +5,4 @@ env/
 awards.db
 __pycache__/
 *.pyc   
+static/

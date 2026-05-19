@@ -33,4 +33,19 @@ export class ApiService {
 
     return this.http.post(`${this.apiUrl}/candidatos/`, formData);
   }
+
+  // Envia o voto para o backend
+  enviarVoto(categoriaId: number, candidatoId: number, votanteId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/votos/`, {
+      categoria_id: categoriaId,
+      candidato_id: candidatoId,
+      votante_id: votanteId
+    });
+  }
+
+  // Busca a contagem de votos (vamos usar depois na tela final!)
+  getResultados(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/resultados/`);
+  }
 }
+

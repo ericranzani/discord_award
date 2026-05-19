@@ -1,68 +1,82 @@
 <div style="padding: 20px; max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-  <h1>🏆 Discord Awards</h1>
-  <hr>
+  
+  <h1 style="text-align: center;">🏆 Discord Awards</h1>
+  <p style="text-align: center; color: #888;"><small>ID do seu Dispositivo: {{ votanteId }}</small></p>
+  <hr style="border: 1px solid #eee; margin-bottom: 30px;">
 
-  <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>Nova Categoria</h3>
-    <input [(ngModel)]="novoNome" placeholder="Nome da Categoria" style="width: 97%; padding: 8px; margin-bottom: 10px;">
-    <input [(ngModel)]="novaDescricao" placeholder="Descrição (opcional)" style="width: 97%; padding: 8px; margin-bottom: 10px;">
-    <button (click) = "salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      Adicionar Categoria
-    </button>
-  </div>
-
-  <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>Novo Candidato (Com Foto)</h3>
-    <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+  @if (categorias.length > 0 && !votacaoConcluida) {
     
-    <select [(ngModel)]="categoriaSelecionada" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-      <option [ngValue]="null" disabled>Selecione a Categoria</option>
-      @for (cat of categorias; track cat.id) {
-        <option [ngValue]="cat.id">{{ cat.nome }}</option>
-      }
-    </select>
+    <div style="background: #2f3136; color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 40px;">
+      <span style="color: #5865F2; font-weight: bold; text-transform: uppercase; font-size: 0.85em;">
+        Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}
+      </span>
+      <h2 style="margin: 5px 0 10px 0; font-size: 1.8em;">{{ categorias[indiceCategoriaAtual].nome }}</h2>
+      <p style="color: #b9bbbe; margin-bottom: 25px; font-style: italic;">
+        "{{ categorias[indiceCategoriaAtual].descricao || 'Sem descrição cadastrada' }}"
+      </p>
 
-    <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 15px; display: block;">
-
-    <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      Salvar Candidato
-    </button>
-  </div>
-
-  <hr>
-
-  <h3>Categorias e Candidatos</h3>
-  @for (cat of categorias; track cat.id) {
-    <div style="border-left: 4px solid #5865F2; padding-left: 15px; margin-bottom: 20px;">
-      <strong style="font-size: 1.2em;">{{ cat.nome }}</strong>
-      <p style="margin: 5px 0;"><small style="color: #666;">{{ cat.descricao }}</small></p>
-      
-      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-        @for (cand of cat.candidatos; track cand.id) {
-          <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; width: 120px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+        @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
+          
+          <div (click)="votarNoCandidato(cand.id)" 
+               style="background: #36393f; border: 2px solid #40444b; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;"
+               onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#5865F2'"
+               onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#40444b'">
             
             @if (cand.imagem_url) {
-              <img [src]="cand.imagem_url" alt="{{ cand.nome }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;">
+              <img [src]="cand.imagem_url" alt="{{ cand.nome }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; border: 3px solid #2f3136;">
             } @else {
-              <div style="font-size: 2.5em; margin-bottom: 5px;">👤</div>
+              <div style="font-size: 2.5em; margin-bottom: 10px;">👤</div>
             }
             
-            <span style="font-weight: 500; font-size: 0.9em;">{{ cand.nome }}</span>
+            <div style="font-weight: bold; font-size: 1em; word-break: break-word;">{{ cand.nome }}</div>
           </div>
+
         } @empty {
-          <p style="color: #999; font-size: 0.9em;">Nenhum candidato nesta categoria.</p>
+          <p style="color: #b9bbbe; text-align: center; grid-column: 1/-1;">Nenhum candidato nesta categoria.</p>
         }
       </div>
     </div>
+
+  } @else if (votacaoConcluida) {
+    
+    <div style="background: #43b581; color: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 40px;">
+      <h2 style="margin-top: 0;">🎉 Votação Concluída!</h2>
+      <p>Seus votos foram computados na nuvem. Agora resta aguardar a revelação ao vivo no servidor!</p>
+    </div>
+
+  } @else {
+    <p style="text-align: center; color: #666;">Nenhuma categoria disponível para votação no momento.</p>
   }
 
-  <h3>Categorias Atuais</h3>
-  <ul>
-    @for (cat of categorias; track cat.id) {
-      <li style="margin-bottom: 10px;">
-        <strong>{{ cat.nome }}</strong><br>
-        <small style="color: #666;">{{ cat.descricao || 'Sem descrição' }}</small>
-      </li>
-    }
-  </ul>
+
+  <details style="background: #f8f9fa; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-top: 50px;">
+    <summary style="cursor: pointer; font-weight: bold; color: #555;">⚙️ Painel de Controle (Cadastros)</summary>
+    <div style="margin-top: 15px;">
+      
+      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px;">
+        <h4>+ Adicionar Nova Categoria</h4>
+        <input [(ngModel)]="novoNome" placeholder="Nome da Categoria" style="width: 95%; padding: 8px; margin-bottom: 10px;">
+        <input [(ngModel)]="novaDescricao" placeholder="Descrição (opcional)" style="width: 95%; padding: 8px; margin-bottom: 10px;">
+        <button (click)="salvarCategoria()" style="background: #5865F2; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar Categoria</button>
+      </div>
+
+      <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px;">
+        <h4>+ Vincular Candidato com Imagem</h4>
+        <input [(ngModel)]="novoNomeCandidato" placeholder="Nome do Candidato" style="width: 95%; padding: 8px; margin-bottom: 10px;">
+        
+        <select [(ngModel)]="categoriaSelecionada" style="width: 98%; padding: 8px; margin-bottom: 10px;">
+          <option [ngValue]="null" disabled>Selecione a Categoria</option>
+          @for (cat of categorias; track cat.id) {
+            <option [ngValue]="cat.id">{{ cat.nome }}</option>
+          }
+        </select>
+
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px; display: block;">
+        <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Salvar Candidato</button>
+      </div>
+
+    </div>
+  </details>
+
 </div>
