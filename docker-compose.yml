@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app  # Sincroniza seu código local com o container
+      - ./backend/static:/app/static
     environment:
       - DATABASE_URL=sqlite:///./awards.db
   

@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
   indiceCategoriaAtual: number = 0;
   votacaoConcluida: boolean = false;
   votacaoEncerradaGlobal: boolean = false;
+  linkCopiadoFeedback: boolean = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -126,14 +127,35 @@ export class AppComponent implements OnInit {
       this.fotoSelecionada
     ).subscribe({
       next: () => {
-        this.carregarCategorias(); // Recarrega a lista atualizada
-        this.novoNomeCandidato = ''; // Limpa os campos
+        this.carregarCategorias(); 
+        this.novoNomeCandidato = ''; 
         this.fotoSelecionada = null;
-        // Truque para limpar o campo de arquivo no HTML
+
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       },
       error: (err) => console.error('Erro ao salvar candidato:', err)
+    });
+  }
+
+  gerarECopiarLinkVotacao() {
+    // Pega o protocolo e host atual (ex: http://localhost:4200)
+    const urlBase = window.location.origin;
+    
+    const linkCompleto = `${urlBase}`;
+
+    // Copia nativamente para a área de transferência do sistema operacional
+    navigator.clipboard.writeText(linkCompleto).then(() => {
+      // Ativa o feedback visual no botão
+      this.linkCopiadoFeedback = true;
+      
+      // Some com a mensagem de feedback após 3 segundos
+      setTimeout(() => {
+        this.linkCopiadoFeedback = false;
+      }, 3000);
+    }).catch(err => {
+      console.error('Erro ao copiar o link: ', err);
+      alert('Não foi possível copiar automaticamente. O link é: ' + linkCompleto);
     });
   }
 }

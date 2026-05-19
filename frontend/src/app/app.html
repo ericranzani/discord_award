@@ -74,6 +74,13 @@
       
       <div style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; text-align: center;">
         <h5 style="margin: 0 0 10px 0;">Controle do Evento Principal</h5>
+      
+      <button (click)="gerarECopiarLinkVotacao()" 
+                [style.background]="linkCopiadoFeedback ? '#43b581' : '#7289da'" 
+                style="color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; transition: background 0.3s;">
+          {{ linkCopiadoFeedback ? '✅ Link Copiado para a Área de Transferência!' : '🔗 Gerar e Copiar Link de Votação' }}
+        </button>
+
         <button (click)="alternarFechamentoEvento()" 
                 [style.background]="votacaoEncerradaGlobal ? '#43b581' : '#f04747'" 
                 style="color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
@@ -97,10 +104,9 @@
             <option [ngValue]="cat.id">{{ cat.nome }}</option>
           }
         </select>
-        <input type="file" id="fileInput" (change Rama)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px;">
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 10px;">
         <button (click)="salvarCandidato()" style="background: #43b581; color: white; border: none; padding: 8px 15px; border-radius: 4px;">Salvar</button>
       </div>
-
     </div>
   </details>
 

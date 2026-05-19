@@ -49,7 +49,7 @@ def rotina_limpeza_24h():
         # Dica para testes rápidos: mude para 30 (30 segundos) para ver a mágica acontecer!
         time.sleep(86400) 
         
-        print("🧹 [Limpeza Automática] Iniciando faxina diária no sistema...")
+        print("[Limpeza Automática] Iniciando faxina diária no sistema...")
         try:
             db = next(get_db())
             
@@ -63,7 +63,7 @@ def rotina_limpeza_24h():
                 config.votacao_encerrada = False
             
             db.commit()
-            print("💾 [Limpeza Automática] Dados do banco resetados.")
+            print("[Limpeza Automática] Dados do banco resetados.")
 
             # 2. Limpeza das Imagens na Pasta Static
             # UPLOAD_DIR é a constante "static" definida no começo do seu main.py
@@ -82,7 +82,7 @@ def rotina_limpeza_24h():
             print("[Limpeza Automática] Faxina completa concluída com sucesso!")
             
         except Exception as e:
-            print(f"❌ [Limpeza Automática] Erro crítico durante a faxina: {e}")
+            print(f"[Limpeza Automática] Erro crítico durante a faxina: {e}")
 
 # Inicializa o status no banco se estiver vazio
 @app.on_event("startup")
@@ -97,7 +97,7 @@ def inicializar_status():
     # Inicia a thread de limpeza em background
     thread_limpeza = threading.Thread(target=rotina_limpeza_24h, daemon=True)
     thread_limpeza.start()
-    print("⏰ [Sistema] Rotina de limpeza agendada para rodar a cada 24 horas.")
+    print("[Sistema] Rotina de limpeza agendada para rodar a cada 24 horas.")
 
 # Rota para obter o status atual da votação
 @app.get("/status-votacao/")
