@@ -2,8 +2,9 @@ from typing import List
 import os
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import func, Boolean                     
+from sqlalchemy.orm import Session              
 from . import models, schemas
 from .database import engine, get_db
 
@@ -40,6 +41,33 @@ app.add_middleware(
 def read_root():
     return {"message": "API do Discord Awards rodando com sucesso!"}
 
+# Inicializa o status no banco se estiver vazio
+@app.on_event("startup")
+def inicializar_status():
+    db = next(get_db())
+    status = db.query(models.CONFIG_STATUS).first()
+    if not status:
+        novo_status = models.CONFIG_STATUS(votacao_encerrada=False)
+        db.add(novo_status)
+        db.commit()
+
+# Rota para obter o status atual da votação
+@app.get("/status-votacao/")
+def obter_status(db: Session = Depends(get_db)):
+    config = db.query(models.CONFIG_STATUS).first()
+    return {"votacao_encerrada": config.votacao_encerrada if config else False}
+
+# Rota para o Admin alterar o status da votação
+@app.post("/status-votacao/alternar/")
+def alternar_status(db: Session = Depends(get_db)):
+    config = db.query(models.CONFIG_STATUS).first()
+    if config:
+        config.votacao_encerrada = not config.votacao_encerrada
+        db.commit()
+        db.refresh(config)
+        return {"votacao_encerrada": config.votacao_encerrada}
+    return {"detail": "Configuração não encontrada"}
+
 # Rota para Criar uma Categoria
 @app.post("/categorias/", response_model=schemas.Categoria)
 def criar_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(get_db)):
@@ -50,9 +78,46 @@ def criar_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(ge
     return db_categoria
 
 # Rota para Listar todas as Categorias
-@app.get("/categorias/", response_model=List[schemas.Categoria])
+@app.get("/categorias/")
 def listar_categorias(db: Session = Depends(get_db)):
-    return db.query(models.Categoria).all()
+    categorias = db.query(models.Categoria).all()
+    config = db.query(models.CONFIG_STATUS).first()
+    voador_encerrado = config.votacao_encerrada if config else False
+
+    resposta = []
+    for cat in categorias:
+        dados_cat = {
+            "id": cat.id,
+            "nome": cat.nome,
+            "descricao": cat.descricao,
+            "candidatos": [
+                {"id": c.id, "nome": c.nome, "imagem_url": c.imagem_url} for c in cat.candidatos
+            ],
+            "vencedor": None,
+            "votacao_encerrada": voador_encerrado
+        }
+
+        # Se a votação acabou, calcula quem teve mais votos nesta categoria
+        if voador_encerrado:
+            mais_votado = db.query(
+                models.Voto.candidato_id,
+                func.count(models.Voto.id).label("total")
+            ).filter(models.Voto.categoria_id == cat.id)\
+             .group_by(models.Voto.candidato_id)\
+             .order_by(func.count(models.Voto.id).desc()).first()
+
+            if mais_votado:
+                cand_vencedor = db.query(models.Candidato).filter(models.Candidato.id == mais_votado.candidato_id).first()
+                if cand_vencedor:
+                    dados_cat["vencedor"] = {
+                        "id": cand_vencedor.id,
+                        "nome": cand_vencedor.nome,
+                        "imagem_url": cand_vencedor.imagem_url,
+                        "votos": mais_votado.total
+                    }
+        resposta.append(dados_cat)
+    
+    return resposta
 
 # Rota para Adicionar Candidato a uma Categoria
 @app.post("/candidatos/", response_model=schemas.Candidato)
@@ -119,7 +184,6 @@ def registrar_voto(voto: schemas.VotoCreate, db: Session = Depends(get_db)):
 # Rota para obter os resultados (quantidade de votos por candidato)
 @app.get("/resultados/")
 def obter_resultados(db: Session = Depends(get_db)):
-    from sqlalchemy import func
     
     # Agrupa os votos por candidato e conta
     resultados = db.query(
