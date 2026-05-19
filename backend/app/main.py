@@ -92,3 +92,47 @@ def criar_candidato_com_foto(
         db.refresh(db_candidato)
         
     return db_candidato
+
+# Rota para registrar um voto
+@app.post("/votos/", response_model=schemas.Voto)
+def registrar_voto(voto: schemas.VotoCreate, db: Session = Depends(get_db)):
+    # 1. Verifica se esse votante já votou nessa categoria específica
+    voto_existente = db.query(models.Voto).filter(
+        models.Voto.categoria_id == voto.categoria_id,
+        models.Voto.votante_id == voto.votante_id
+    ).first()
+    
+    if voto_existente:
+        raise HTTPException(status_code=400, detail="Você já votou nesta categoria!")
+        
+    # 2. Se não votou, registra o voto
+    db_voto = models.Voto(
+        categoria_id=voto.categoria_id,
+        candidato_id=voto.candidato_id,
+        votante_id=voto.votante_id
+    )
+    db.add(db_voto)
+    db.commit()
+    db.refresh(db_voto)
+    return db_voto
+
+# Rota para obter os resultados (quantidade de votos por candidato)
+@app.get("/resultados/")
+def obter_resultados(db: Session = Depends(get_db)):
+    from sqlalchemy import func
+    
+    # Agrupa os votos por candidato e conta
+    resultados = db.query(
+        models.Voto.categoria_id,
+        models.Voto.candidato_id,
+        func.count(models.Voto.id).label("total_votos")
+    ).group_by(models.Voto.categoria_id, models.Voto.candidato_id).all()
+    
+    # Formata a resposta para facilitar a leitura no Angular
+    return [
+        {
+            "categoria_id": r.categoria_id,
+            "candidato_id": r.candidato_id,
+            "votos": r.total_votos
+        } for r in resultados
+    ]

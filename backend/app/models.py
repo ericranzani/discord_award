@@ -22,3 +22,11 @@ class Candidato(Base):
 
     # Relacionamento: O candidato pertence a uma categoria
     categoria = relationship("Categoria", back_populates="candidatos")
+
+class Voto(Base):
+    __tablename__ = "votos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
+    candidato_id = Column(Integer, ForeignKey("candidatos.id"), nullable=False)
+    votante_id = Column(String, nullable=False)

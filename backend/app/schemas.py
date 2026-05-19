@@ -32,3 +32,15 @@ class Categoria(CategoriaBase):
 
     class Config:
         from_attributes = True
+
+# --- SCHEMAS PARA VOTOS ---
+class VotoCreate(BaseModel):
+    categoria_id: int
+    candidato_id: int
+    votante_id: str
+
+class Voto(VotoCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
