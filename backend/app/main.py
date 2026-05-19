@@ -1,7 +1,5 @@
 from typing import List
-import os
-import threading
-import time
+import os, threading, time, shutil
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -48,27 +46,43 @@ def read_root():
 def rotina_limpeza_24h():
     while True:
         # 86400 segundos = 24 horas
-        # Dica para testes: mude para 60 (1 minuto) ou 300 (5 minutos) para ver funcionando!
+        # Dica para testes rápidos: mude para 30 (30 segundos) para ver a mágica acontecer!
         time.sleep(86400) 
         
-        print("[Limpeza Automática] Iniciando faxina diária no banco de dados...")
+        print("🧹 [Limpeza Automática] Iniciando faxina diária no sistema...")
         try:
             db = next(get_db())
             
-            # Deleta os votos primeiro por causa das chaves estrangeiras (Foreign Keys)
+            # 1. Limpeza do Banco de Dados (Respeitando as chaves estrangeiras)
             db.query(models.Voto).delete()
             db.query(models.Candidato).delete()
             db.query(models.Categoria).delete()
             
-            # Reseta o status da votação para aberta
             config = db.query(models.CONFIG_STATUS).first()
             if config:
                 config.votacao_encerrada = False
             
             db.commit()
-            print("[Limpeza Automática] Banco de dados resetado com sucesso!")
+            print("💾 [Limpeza Automática] Dados do banco resetados.")
+
+            # 2. Limpeza das Imagens na Pasta Static
+            # UPLOAD_DIR é a constante "static" definida no começo do seu main.py
+            if os.path.exists(UPLOAD_DIR):
+                for item in os.listdir(UPLOAD_DIR):
+                    caminho_item = os.path.join(UPLOAD_DIR, item)
+                    try:
+                        if os.path.isfile(caminho_item) or os.path.islink(caminho_item):
+                            os.unlink(caminho_item) # Deleta o arquivo de imagem
+                        elif os.path.isdir(caminho_item):
+                            shutil.rmtree(caminho_item) # Deleta subpastas se houver
+                    except Exception as fail:
+                        print(f" Não foi possível deletar {caminho_item}: {fail}")
+                        
+                print("[Limpeza Automática] Pasta de imagens estáticas esvaziada.")
+            print("[Limpeza Automática] Faxina completa concluída com sucesso!")
+            
         except Exception as e:
-            print(f"[Limpeza Automática] Erro ao limpar o banco: {e}")
+            print(f"❌ [Limpeza Automática] Erro crítico durante a faxina: {e}")
 
 # Inicializa o status no banco se estiver vazio
 @app.on_event("startup")
