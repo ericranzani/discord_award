@@ -1,5 +1,4 @@
 <div class="app-container">
-  
   <div></div>
 
   <div class="content-center">
@@ -26,58 +25,100 @@
 
     @if (abaAtiva === 'votar') {
       @if (votacaoEncerradaGlobal) {
-        <h2 style="text-align: center; color: #faa61a; font-size: 2em; margin-bottom: 20px;">👑 Grandes Vencedores do Ano 👑</h2>
-        
-        @for (cat of categorias; track cat.id) {
-          <div class="card-podium">
-            <h3 class="podium-title">{{ cat.nome }}</h3>
-            <p class="section-subtitle">"{{ cat.descricao }}"</p>
-            
-            @if (cat.vencedor) {
-              <div class="winner-row">
-                @if (cat.vencedor.imagem_url) {
-                  <img [src]="cat.vencedor.imagem_url" alt="Vencedor" class="avatar-winner">
-                } @else {
-                  <div style="font-size: 3.5em; padding-left: 10px;">👑</div>
-                }
-                <div>
-                  <div class="winner-name">{{ cat.vencedor.nome }}</div>
-                  <div class="winner-votes">🥇 {{ cat.vencedor.votos }} votos computados</div>
-                </div>
-              </div>
-            } @else {
-              <p class="no-data-text" style="text-align: left;">Nenhum voto computado nesta categoria.</p>
-            }
-          </div>
-        }
-      } @else {
-        @if (categorias.length > 0 && !votacaoConcluida) {
-          <div class="card-base">
-            <span class="category-indicator">Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}</span>
-            <h2 class="category-title">{{ categorias[indiceCategoriaAtual].nome }}</h2>
-            <p class="category-desc">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
+        <div class="results-header">
+          <h2> Grandes Vencedores do Ano 👑</h2>
+          <button (click)="baixarResultadosPDF()" class="btn-inline btn-link-share">
+            Baixar resultados
+          </button>
+        </div>
 
-            <div class="candidates-grid">
-              @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
-                <div (click)="votarNoCandidato(cand.id)" class="candidate-vote-card">
-                  @if (cand.imagem_url) {
-                    <img [src]="cand.imagem_url" alt="Candidato" class="avatar-large">
-                  } @else {
-                    <div style="font-size: 3.5em; margin-bottom: 15px;">👤</div>
-                  }
-                  <div class="candidate-name">{{ cand.nome }}</div>
-                </div>
-              }
+        <div class="card-podium">
+          @if (categorias.length > 0) {
+            <div class="winner-grid-layout">
+              
+              <div class="avatar-wrapper">
+                @if (categorias[indiceVencedorAtual].vencedor?.imagem_url) {
+                  <img [src]="categorias[indiceVencedorAtual].vencedor.imagem_url" alt="Vencedor" class="avatar-winner-xl">
+                } @else {
+                  <div class="avatar-placeholder"></div>
+                }
+              </div>
+
+              <div class="winner-info-right">
+                <span class="category-indicator">
+                  Revelando: {{ indiceVencedorAtual + 1 }} de {{ categorias.length }}
+                </span>
+                
+                <h3 class="podium-title">{{ categorias[indiceVencedorAtual].nome }}</h3>
+                <p class="section-subtitle">"{{ categorias[indiceVencedorAtual].descricao }}"</p>
+
+                <hr class="card-inner-divider">
+
+                @if (categorias[indiceVencedorAtual].vencedor) {
+                  <div class="winner-name-xl">{{ categorias[indiceVencedorAtual].vencedor.nome }}</div>
+                  <div class="winner-votes-xl">
+                    <span>🥇</span> {{ categorias[indiceVencedorAtual].vencedor.votos }} votos computados
+                  </div>
+                } @else {
+                  <div class="winner-name-xl" style="color: var(--color-muted); font-size: 1.5rem;">Nenhum voto computado</div>
+                }
+              </div>
+
             </div>
+          }
+        </div>
+
+        <div class="slide-controls">
+          <button (click)="anteriorVencedor()" [disabled]="indiceVencedorAtual === 0" class="btn-nav-slide">
+            ⬅️ Anterior
+          </button>
+          <span style="color: var(--color-muted); font-weight: bold; font-size: 1.1rem;">
+            {{ indiceVencedorAtual + 1 }} / {{ categorias.length }}
+          </span>
+          <button (click)="proximoVencedor()" [disabled]="indiceVencedorAtual === categorias.length - 1" class="btn-nav-slide">
+            Próximo ➡️
+          </button>
+        </div>
+
+        <div id="lista-completa-pdf" class="pdf-hidden-container">
+          <div class="pdf-header">
+            <h1>🏆 Discord Awards 🏆</h1>
+            <p>Relatório Oficial de Vencedores</p>
           </div>
-        } @else if (votacaoConcluida) {
-          <div class="success-banner">
-            <h2>🎉 Votação Concluída!</h2>
-            <p>Seus votos foram computados na nuvem. Aguarde o comando do Admin para ver os resultados ao vivo!</p>
-          </div>
-        } @else {
-          <p class="no-data-text">Nenhuma categoria disponível para votação no momento.</p>
-        }
+
+          @for (cat of categorias; track cat.id) {
+            <div class="pdf-card-layout">
+              <div class="winner-grid-layout" style="background: var(--bg-inner); padding: 1.5rem; border-radius: 8px;">
+                
+                <div class="avatar-wrapper">
+                  @if (cat.vencedor?.imagem_url) {
+                    <img [src]="cat.vencedor.imagem_url" class="avatar-winner-xl pdf-thumb">
+                  } @else {
+                    <div class="avatar-placeholder pdf-thumb-placeholder"></div>
+                  }
+                </div>
+
+                <div class="winner-info-right">
+                  <span class="category-indicator">CATEGORIA</span>
+                  <h3 class="podium-title" style="font-size: 1.6rem;">{{ cat.nome }}</h3>
+                  <p class="section-subtitle">"{{ cat.descricao }}"</p>
+                  
+                  <hr class="card-inner-divider">
+
+                  @if (cat.vencedor) {
+                    <div class="winner-name-xl" style="font-size: 2.2rem;">{{ cat.vencedor.nome }}</div>
+                    <div class="winner-votes-xl" style="font-size: 1.2rem;">
+                      <span>🥇</span> {{ cat.vencedor.votos }} votos computados
+                    </div>
+                  } @else {
+                    <div class="winner-name-xl" style="color: var(--color-muted); font-size: 1.3rem;">Nenhum voto computado</div>
+                  }
+                </div>
+
+              </div>
+            </div>
+          }
+        </div>
       }
     }
 

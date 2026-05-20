@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.services';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +28,7 @@ export class AppComponent implements OnInit {
   votacaoEncerradaGlobal: boolean = false;
   linkCopiadoFeedback: boolean = false;
   abaAtiva: 'votar' | 'visualizar' | 'criar' = 'votar';
+  indiceVencedorAtual: number = 0;
 
   constructor(private apiService: ApiService) {}
 
@@ -158,5 +161,59 @@ export class AppComponent implements OnInit {
       console.error('Erro ao copiar o link: ', err);
       alert('Não foi possível copiar automaticamente. O link é: ' + linkCompleto);
     });
+  }
+
+  // Navegação do Slide
+  proximoVencedor() {
+    if (this.indiceVencedorAtual < this.categorias.length - 1) {
+      this.indiceVencedorAtual++;
+    }
+  }
+
+  anteriorVencedor() {
+    if (this.indiceVencedorAtual > 0) {
+      this.indiceVencedorAtual = 0;
+    }
+  }
+
+  // GERAÇÃO DE PDF 
+  async baixarResultadosPDF() {
+    const data = document.getElementById('lista-completa-pdf'); 
+    if (!data) {
+      console.error('Contêiner do PDF não encontrado no DOM.');
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(data, {
+        backgroundColor: '#202225',
+        scale: 2,
+        useCORS: true, // Crucial para permitir o download das imagens sem quebrar o canvas
+        logging: false
+      });
+
+      const imgWidth = 190; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 10; 
+
+      const contentDataURL = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      pdf.addImage(contentDataURL, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(contentDataURL, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('Discord_Awards_Resultados.pdf');
+    } catch (error) {
+      console.error('Erro ao gerar o PDF:', error);
+    }
   }
 }
