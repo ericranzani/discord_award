@@ -134,7 +134,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr; /* 1fr da imagem e 1fr das descrições */
   gap: 2rem;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .avatar-wrapper {
@@ -182,7 +182,7 @@
 
 .podium-title { 
   font-size: 1.6rem; /* Diminuído conforme pedido */
-  margin: 0.2rem 0; 
+  margin: 1.6rem 0 0.2rem 0; 
   color: #ffffff; 
   font-weight: 800;
 }
