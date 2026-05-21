@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.services';
 import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 import html2canvas from 'html2canvas';
 
 @Component({
@@ -27,7 +28,9 @@ export class AppComponent implements OnInit {
   votacaoConcluida: boolean = false;
   votacaoEncerradaGlobal: boolean = false;
   linkCopiadoFeedback: boolean = false;
-  abaAtiva: 'votar' | 'visualizar' | 'criar' = 'votar';
+  
+  // Sincronizado com os identificadores usados no HTML
+  abaAtiva: 'votar' | 'resultados' | 'visualizar' | 'criacao' = 'votar';
   indiceVencedorAtual: number = 0;
 
   constructor(private apiService: ApiService) {}
@@ -41,7 +44,6 @@ export class AppComponent implements OnInit {
   obterOuCriarVotanteId() {
     let id = localStorage.getItem('discord_awards_votante_id');
     if (!id) {
-      // Cria uma string aleatória simples simulando um ID único
       id = 'user_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
       localStorage.setItem('discord_awards_votante_id', id);
     }
@@ -63,7 +65,6 @@ export class AppComponent implements OnInit {
     this.apiService.getCategorias().subscribe({
       next: (data) => {
         this.categorias = data;
-        // Se a lista vier do backend dizendo que está encerrada, sincroniza o layout
         if (data.length > 0 && data[0].votacao_encerrada) {
           this.votacaoEncerradaGlobal = true;
         }
@@ -82,7 +83,6 @@ export class AppComponent implements OnInit {
         this.avancarCategoria();
       },
       error: (err) => {
-        // Se o backend disser que ele já votou, avança de qualquer forma para não travar a tela
         alert(err.error.detail || 'Erro ao votar. Avançando...');
         this.avancarCategoria();
       }
@@ -101,13 +101,12 @@ export class AppComponent implements OnInit {
     this.apiService.alternarStatusVotacao().subscribe({
       next: (res) => {
         this.votacaoEncerradaGlobal = res.votacao_encerrada;
-        this.verificarStatusERecarregar(); // Força o recalculo e puxa os vencedores
+        this.verificarStatusERecarregar(); 
       },
       error: (err) => console.error('Erro ao alterar estado do evento:', err)
     });
   }
 
-  // Função para capturar a foto quando o usuário escolher o arquivo
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
@@ -118,12 +117,16 @@ export class AppComponent implements OnInit {
   salvarCategoria() {
     if (!this.novoNome) return;
     this.apiService.criarCategoria({ nome: this.novoNome, descricao: this.novaDescricao }).subscribe({
-      next: () => { this.carregarCategorias(); this.novoNome = ''; this.novaDescricao = ''; }
+      next: () => { 
+        this.carregarCategorias(); 
+        this.novoNome = ''; 
+        this.novaDescricao = ''; 
+      }
     });
   }
 
   salvarCandidato() {
-    if (!this.novoNomeCandidato || !this.categoriaSelecionada) return;
+    if (!!this.novoNomeCandidato || !this.categoriaSelecionada) return;
 
     this.apiService.criarCandidato(
       this.novoNomeCandidato, 
@@ -143,17 +146,11 @@ export class AppComponent implements OnInit {
   }
 
   gerarECopiarLinkVotacao() {
-    // Pega o protocolo e host atual (ex: http://localhost:4200)
     const urlBase = window.location.origin;
-    
     const linkCompleto = `${urlBase}`;
 
-    // Copia nativamente para a área de transferência do sistema operacional
     navigator.clipboard.writeText(linkCompleto).then(() => {
-      // Ativa o feedback visual no botão
       this.linkCopiadoFeedback = true;
-      
-      // Some com a mensagem de feedback após 3 segundos
       setTimeout(() => {
         this.linkCopiadoFeedback = false;
       }, 3000);
@@ -163,7 +160,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // Navegação do Slide
+  // Navegação do Slide corrigida para decrementar passo a passo
   proximoVencedor() {
     if (this.indiceVencedorAtual < this.categorias.length - 1) {
       this.indiceVencedorAtual++;
@@ -172,48 +169,95 @@ export class AppComponent implements OnInit {
 
   anteriorVencedor() {
     if (this.indiceVencedorAtual > 0) {
-      this.indiceVencedorAtual = 0;
+      this.indiceVencedorAtual--;
     }
   }
 
-  // GERAÇÃO DE PDF 
+  toBase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        const reader = new FileReader();
+        reader.onloadend = function() {
+          resolve(reader.result as string);
+        };
+        reader.readAsDataURL(xhr.response);
+      };
+      xhr.onerror = function() {
+        reject(new Error('Falha ao transformar imagem em Base64'));
+      };
+      xhr.open('GET', url);
+      xhr.responseType = 'blob';
+      xhr.send();
+    });
+  }
+
+  // GERAÇÃO DE PDF OTIMIZADA COM COPIAS DO DOM EM MEMÓRIA (EVITA PÁGINAS EM BRANCO)
   async baixarResultadosPDF() {
-    const data = document.getElementById('lista-completa-pdf'); 
-    if (!data) {
+    const elementOriginal = document.getElementById('lista-completa-pdf'); 
+    if (!elementOriginal) {
       console.error('Contêiner do PDF não encontrado no DOM.');
       return;
     }
 
-    try {
-      const canvas = await html2canvas(data, {
-        backgroundColor: '#202225',
-        scale: 2,
-        useCORS: true, // Crucial para permitir o download das imagens sem quebrar o canvas
-        logging: false
-      });
+    const clone = elementOriginal.cloneNode(true) as HTMLElement;
 
-      const imgWidth = 190; 
-      const pageHeight = 295; 
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 10; 
+    clone.style.display = 'block';
+    clone.style.visibility = 'visible';
+    clone.style.opacity = '1';
+    clone.style.width = '1200px'; 
+    clone.style.height = 'auto';
+    clone.style.position = 'absolute';
+    clone.style.top = '-9999px'; 
+    clone.style.left = '-9999px';
+    clone.style.backgroundColor = '#202225'; 
 
-      const contentDataURL = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+    document.body.appendChild(clone);
 
-      pdf.addImage(contentDataURL, 'PNG', 10, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+    const imagens = clone.getElementsByTagName('img');
+    for (let i = 0; i < imagens.length; i++) {
+      const img = imagens[i];
+      const srcOriginal = img.src;
+      const separador = srcOriginal.includes('?') ? '&' : '?';
+      const urlComCacheBuster = `${srcOriginal}${separador}t=${new Date().getTime()}`;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight + 10;
-        pdf.addPage();
-        pdf.addImage(contentDataURL, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      try {
+        const base64Data = await this.toBase64(urlComCacheBuster);
+        img.src = base64Data;
+      } catch (e) {
+        console.warn('Não foi possível converter a imagem no clone: ' + srcOriginal, e);
       }
+    }
 
-      pdf.save('Discord_Awards_Resultados.pdf');
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    try {
+      const opt = {
+        margin:       10,
+        filename:     'Discord_Awards_Resultados.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#202225',
+          logging: false,
+          letterRendering: true
+        },
+        jsPDF:        { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'landscape' 
+        }
+      } as const;
+
+      await html2pdf().set(opt).from(clone).save();
+
     } catch (error) {
-      console.error('Erro ao gerar o PDF:', error);
+      console.error('Erro crítico ao gerar o PDF:', error);
+    } finally {
+      if (clone && clone.parentNode) {
+        clone.parentNode.removeChild(clone);
+      }
     }
   }
 }

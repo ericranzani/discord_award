@@ -17,13 +17,49 @@
 
     <nav class="tabs-nav">
       <button (click)="abaAtiva = 'votar'" class="tab-button" [class.active]="abaAtiva === 'votar'">🗳️ Votar</button>
+      <button (click)="abaAtiva = 'resultados'" class="tab-button" [class.active]="abaAtiva === 'resultados'">📊 Resultados</button>
       <button (click)="abaAtiva = 'visualizar'" class="tab-button" [class.active]="abaAtiva === 'visualizar'">👁️ Visualizar Enquetes</button>
-      <button (click)="abaAtiva = 'criar'" class="tab-button" [class.active]="abaAtiva === 'criar'">⚙️ Painel de Criação</button>
+      <button (click)="abaAtiva = 'criacao'" class="tab-button" [class.active]="abaAtiva === 'criacao'">⚙️ Painel de Criação</button>
     </nav>
 
     <div class="divider"></div>
 
     @if (abaAtiva === 'votar') {
+      @if (votacaoEncerradaGlobal) {
+        <div class="card-base text-center" style="padding: 40px;">
+          <h2 style="color: var(--color-danger);">🔒 Votações Encerradas!</h2>
+          <p class="section-subtitle">O administrador encerrou o período de votos. Vá para a aba <strong>📊 Resultados</strong> para acompanhar a revelação!</p>
+        </div>
+      } @else {
+        @if (categorias.length === 0) {
+          <p class="no-data-text">Nenhuma enquete encontrada para votação no momento.</p>
+        } @else if (!votacaoConcluida) {
+          <div class="card-base">
+            <span class="category-indicator">Categoria {{ indiceCategoriaAtual + 1 }} de {{ categorias.length }}</span>
+            <h2 class="section-title">{{ categorias[indiceCategoriaAtual].nome }}</h2>
+            <p class="section-subtitle">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
+            
+            <div class="list-candidates-wrapper" style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+              @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
+                <div class="card-base text-center" style="cursor: pointer; background: var(--bg-inner);" (click)="votarNoCandidato(cand.id)">
+                  @if (cand.imagem_url) {
+                    <img [src]="cand.imagem_url" alt="Candidato" class="avatar-winner-xl" style="height: 150px; width: 100%; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
+                  }
+                  <span style="font-weight: bold; font-size: 1.2rem;">{{ cand.nome }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="card-base text-center" style="padding: 40px;">
+            <h2 style="color: var(--color-success);">🎉 Obrigado por Votar!</h2>
+            <p class="section-subtitle">Seus votos foram computados. Aguarde o encerramento global para ver os resultados.</p>
+          </div>
+        }
+      }
+    }
+
+    @if (abaAtiva === 'resultados') {
       @if (votacaoEncerradaGlobal) {
         <div class="results-header">
           <h2> Grandes Vencedores do Ano 👑</h2>
@@ -65,10 +101,12 @@
               </div>
 
             </div>
+          } @else {
+            <p class="no-data-text">Nenhum dado consolidado disponível.</p>
           }
         </div>
 
-        <div class="slide-controls">
+        <div class="slide-controls" *ngIf="categorias.length > 0">
           <button (click)="anteriorVencedor()" [disabled]="indiceVencedorAtual === 0" class="btn-nav-slide">
             ⬅️ Anterior
           </button>
@@ -80,15 +118,15 @@
           </button>
         </div>
 
-        <div id="lista-completa-pdf" class="pdf-hidden-container">
-          <div class="pdf-header">
-            <h1>🏆 Discord Awards 🏆</h1>
-            <p>Relatório Oficial de Vencedores</p>
+        <div id="lista-completa-pdf" class="pdf-hidden-container" style="display: none;">
+          <div class="pdf-header" style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #faa61a; font-size: 2.5rem;">🏆 Discord Awards 🏆</h1>
+            <p style="color: #b9bbbe; font-size: 1.2rem;">Relatório Oficial de Vencedores</p>
           </div>
 
           @for (cat of categorias; track cat.id) {
-            <div class="pdf-card-layout">
-              <div class="winner-grid-layout" style="background: var(--bg-inner); padding: 1.5rem; border-radius: 8px;">
+            <div class="pdf-card-layout" style="margin-bottom: 30px; page-break-inside: avoid;">
+              <div class="winner-grid-layout" style="background: #2f3136; padding: 1.5rem; border-radius: 8px;">
                 
                 <div class="avatar-wrapper">
                   @if (cat.vencedor?.imagem_url) {
@@ -120,7 +158,7 @@
           }
         </div>
       }
-    }
+    } 
 
     @if (abaAtiva === 'visualizar') {
       <h2 class="section-title">👀 Enquetes Cadastradas</h2>
@@ -153,7 +191,7 @@
       }
     }
 
-    @if (abaAtiva === 'criar') {
+    @if (abaAtiva === 'criacao') {
       <h2 class="section-title">⚙️ Painel de Controle Administrativo</h2>
       <p class="section-subtitle">Gerencie o andamento das votações e faça novos cadastros.</p>
 
