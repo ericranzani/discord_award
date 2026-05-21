@@ -39,15 +39,26 @@
             <h2 class="section-title">{{ categorias[indiceCategoriaAtual].nome }}</h2>
             <p class="section-subtitle">"{{ categorias[indiceCategoriaAtual].descricao }}"</p>
             
-            <div class="list-candidates-wrapper" style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="list-candidates-wrapper" style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
               @for (cand of categorias[indiceCategoriaAtual].candidatos; track cand.id) {
-                <div class="card-base text-center" style="cursor: pointer; background: var(--bg-inner);" (click)="votarNoCandidato(cand.id)">
-                  @if (cand.imagem_url) {
-                    <img [src]="cand.imagem_url" alt="Candidato" class="avatar-winner-xl" style="height: 150px; width: 100%; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
-                  }
-                  <span style="font-weight: bold; font-size: 1.2rem;">{{ cand.nome }}</span>
+                <div class="candidate-row-card" (click)="votarNoCandidato(cand.id)">
+                  
+                  <div class="candidate-avatar-thumb">
+                    @if (cand.imagem_url) {
+                      <img [src]="cand.imagem_url" alt="Candidato">
+                    } @else {
+                      <div class="avatar-fallback">👤</div>
+                    }
+                  </div>
+
+                  <div class="candidate-info-content">
+                    <span class="candidate-name-text">
+                      {{ cand.nome }}
+                    </span>
+                  </div>
                 </div>
               }
+
             </div>
           </div>
         } @else {
