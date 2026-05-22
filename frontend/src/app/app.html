@@ -243,8 +243,12 @@
           }
         </select>
         
-        <label style="display: block; margin-bottom: 8px; color: #b9bbbe; font-weight: 600;">Foto do Candidato:</label>
-        <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="margin-bottom: 20px; font-size: 1em; color: #b9bbbe;">
+        <span class="upload-container" style="margin-bottom: 20px;">
+          <label for="fileInput" class="btn-upload-discord">
+            <span>Escolher Imagem do candidato</span> 
+          </label>
+          <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+        </span>
         
         <button (click)="salvarCandidato()" class="btn-inline btn-success">Salvar Candidato</button>
       </div>

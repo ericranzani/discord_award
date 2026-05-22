@@ -302,6 +302,30 @@
 .btn-link-share { background-color: #7289da; color: white; }
 .btn-link-share:hover { background-color: #5b73c7; }
 
+/* Botão Customizado de Upload estilo Discord */
+.btn-upload-discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #4f545c;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid #202225;
+}
+
+.btn-upload-discord:hover {
+  background-color: #686d73;
+}
+
+.btn-upload-discord:active {
+  background-color: #40444b;
+}
+
 /* --- CONFIGURAÇÃO EXCLUSIVA DO CONTEXTO DO PDF --- */
 .pdf-hidden-container {
   opacity: 0;
