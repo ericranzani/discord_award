@@ -3,8 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.services';
 import jsPDF from 'jspdf';
-import html2pdf from 'html2pdf.js';
-import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-root',
@@ -173,91 +171,141 @@ export class AppComponent implements OnInit {
     }
   }
 
-  toBase64(url: string): Promise<string> {
+
+  private carregarImagem(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function() {
-        const reader = new FileReader();
-        reader.onloadend = function() {
-          resolve(reader.result as string);
-        };
-        reader.readAsDataURL(xhr.response);
-      };
-      xhr.onerror = function() {
-        reject(new Error('Falha ao transformar imagem em Base64'));
-      };
-      xhr.open('GET', url);
-      xhr.responseType = 'blob';
-      xhr.send();
+      const img = new Image();
+      img.crossOrigin = 'Anonymous'; // Evita problemas de CORS com o Docker/Backend
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      img.src = url;
     });
   }
 
   // GERAÇÃO DE PDF OTIMIZADA COM COPIAS DO DOM EM MEMÓRIA (EVITA PÁGINAS EM BRANCO)
   async baixarResultadosPDF() {
-    const elementOriginal = document.getElementById('lista-completa-pdf'); 
-    if (!elementOriginal) {
-      console.error('Contêiner do PDF não encontrado no DOM.');
-      return;
-    }
+    if (!this.categorias || this.categorias.length === 0) return;
 
-    const clone = elementOriginal.cloneNode(true) as HTMLElement;
+    // 1. Instancia o jsPDF em formato Paisagem (Landscape)
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
 
-    clone.style.display = 'block';
-    clone.style.visibility = 'visible';
-    clone.style.opacity = '1';
-    clone.style.width = '1200px'; 
-    clone.style.height = 'auto';
-    clone.style.position = 'absolute';
-    clone.style.top = '-9999px'; 
-    clone.style.left = '-9999px';
-    clone.style.backgroundColor = '#202225'; 
+    const larguraPagina = 297;
+    let y = 20;
 
-    document.body.appendChild(clone);
+    // 2. Desenha o fundo escuro geral do relatório (#1e1f22 ou #2f3136)
+    doc.setFillColor(30, 31, 34);
+    doc.rect(0, 0, larguraPagina, 210, 'F');
 
-    const imagens = clone.getElementsByTagName('img');
-    for (let i = 0; i < imagens.length; i++) {
-      const img = imagens[i];
-      const srcOriginal = img.src;
-      const separador = srcOriginal.includes('?') ? '&' : '?';
-      const urlComCacheBuster = `${srcOriginal}${separador}t=${new Date().getTime()}`;
+    // Cabeçalho do PDF (Removidos emojis do texto para evitar bugs de encoding)
+    doc.setTextColor(250, 166, 26); // Amarelo Discord
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(26);
+    doc.text('DISCORD AWARDS', larguraPagina / 2, y, { align: 'center' });
 
-      try {
-        const base64Data = await this.toBase64(urlComCacheBuster);
-        img.src = base64Data;
-      } catch (e) {
-        console.warn('Não foi possível converter a imagem no clone: ' + srcOriginal, e);
+    y += 8;
+    doc.setTextColor(185, 187, 190); // Cinza claro
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text('Relatorio Oficial de Vencedores do Ano', larguraPagina / 2, y, { align: 'center' });
+    
+    y += 15;
+
+    // 3. Iterar pelas categorias buscando renderizar os cards horizontais
+    for (const cat of this.categorias) {
+      // Validação de quebra de página se o espaço vertical estourar
+      if (y > 150) {
+        doc.addPage();
+        doc.setFillColor(30, 31, 34);
+        doc.rect(0, 0, larguraPagina, 210, 'F');
+        y = 16; // Margem inicial do topo da nova folha
       }
-    }
 
-    await new Promise(resolve => setTimeout(resolve, 300));
+      // Altura customizada do card para caber a imagem proporcional à do app
+      const alturaCard = 80; 
 
-    try {
-      const opt = {
-        margin:       10,
-        filename:     'Discord_Awards_Resultados.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          backgroundColor: '#202225',
-          logging: false,
-          letterRendering: true
-        },
-        jsPDF:        { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'landscape' 
+      // Desenha a estrutura interna do card com a borda amarela do Discord
+      doc.setDrawColor(250, 166, 26);
+      doc.setLineWidth(0.6);
+      doc.setFillColor(47, 49, 54); // Cor do card (#2f3136)
+      doc.roundedRect(20, y, larguraPagina - 40, alturaCard, 4, 4, 'FD');
+
+      // --- COLUNA DA ESQUERDA: IMAGEM DO VENCEDOR (Estilo a do App) ---
+      const larguraImg = 70;
+      const alturaImg = alturaCard - 6; // Pequena margem interna de 3mm
+      const posImgX = 23;
+      const posImgY = y + 3;
+
+      if (cat.vencedor && cat.vencedor.imagem_url) {
+        try {
+          // Carrega a imagem dinamicamente para poder injetá-la no Canvas do PDF
+          const imgElement = await this.carregarImagem(cat.vencedor.imagem_url);
+          doc.addImage(imgElement, 'JPEG', posImgX, posImgY, larguraImg, alturaImg, undefined, 'FAST');
+        } catch (error) {
+          // Fallback gráfico se a imagem falhar (desenha um quadrado cinza)
+          doc.setFillColor(66, 69, 74);
+          doc.rect(posImgX, posImgY, larguraImg, alturaImg, 'F');
         }
-      } as const;
-
-      await html2pdf().set(opt).from(clone).save();
-
-    } catch (error) {
-      console.error('Erro crítico ao gerar o PDF:', error);
-    } finally {
-      if (clone && clone.parentNode) {
-        clone.parentNode.removeChild(clone);
+      } else {
+        // Fallback sem imagem (Padrão cinza do Discord)
+        doc.setFillColor(66, 69, 74);
+        doc.rect(posImgX, posImgY, larguraImg, alturaImg, 'F');
       }
+
+      // --- COLUNA DA DIREITA: TEXTOS E INFORMAÇÕES (Empilhados dinamicamente) ---
+      // Começa logo após o espaço ocupado pela imagem (23mm iniciais + 45mm da imagem + 8mm de espaçamento)
+      const posXTexto = posImgX + larguraImg + 8; 
+
+      // 1. Status / Indicador roxo do topo ("REVELANDO" ou "VENCEDOR")
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(114, 137, 218); // Azul/Roxo Blurple do Discord (#7289da)
+      doc.text('CATEGORIA CONCLUIDA', posXTexto, y + 8);
+
+      // 2. Nome da Categoria (Título do Bloco)
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255); // Branco puro
+      doc.text(cat.nome, posXTexto, y + 15);
+
+      // 3. Descrição da Categoria
+      doc.setFont('Helvetica', 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(185, 187, 190); // Cinza secundário
+      doc.text(`"${cat.descricao || ''}"`, posXTexto, y + 21);
+
+      // Linha divisória interna sutil (Cinza escuro)
+      doc.setDrawColor(66, 69, 74);
+      doc.setLineWidth(0.3);
+      doc.line(posXTexto, y + 25, larguraPagina - 25, y + 25);
+
+      // 4. Nome do Ganhador em Destaque Grande (Laranja/Amarelo)
+      if (cat.vencedor) {
+        doc.setFont('Helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(250, 166, 26); // Amarelo Destaque
+        doc.text(cat.vencedor.nome, posXTexto, y + 34);
+
+        // 5. Quantidade de votos (Texto em verde sucesso igual ao app)
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.setTextColor(67, 181, 129); // Verde Discord (#43b581)
+        doc.text(`${cat.vencedor.votos} votos computados`, posXTexto, y + 41);
+      } else {
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(114, 118, 125);
+        doc.text('Nenhum voto computado', posXTexto, y + 34);
+      }
+
+      // Avança o Y adicionando o tamanho do card + espaçamento confortável entre eles
+      y += alturaCard + 4;
     }
+
+    // 4. Salva o arquivo gerado de forma limpa
+    doc.save('Discord_Awards_Resultados.pdf');
   }
 }

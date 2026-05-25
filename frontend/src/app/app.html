@@ -128,46 +128,6 @@
             Próximo ➡️
           </button>
         </div>
-
-        <div id="lista-completa-pdf" class="pdf-hidden-container" style="display: none;">
-          <div class="pdf-header" style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #faa61a; font-size: 2.5rem;">🏆 Discord Awards 🏆</h1>
-            <p style="color: #b9bbbe; font-size: 1.2rem;">Relatório Oficial de Vencedores</p>
-          </div>
-
-          @for (cat of categorias; track cat.id) {
-            <div class="pdf-card-layout" style="margin-bottom: 30px; page-break-inside: avoid;">
-              <div class="winner-grid-layout" style="background: #2f3136; padding: 1.5rem; border-radius: 8px;">
-                
-                <div class="avatar-wrapper">
-                  @if (cat.vencedor?.imagem_url) {
-                    <img [src]="cat.vencedor.imagem_url" class="avatar-winner-xl pdf-thumb">
-                  } @else {
-                    <div class="avatar-placeholder pdf-thumb-placeholder"></div>
-                  }
-                </div>
-
-                <div class="winner-info-right">
-                  <span class="category-indicator">CATEGORIA</span>
-                  <h3 class="podium-title" style="font-size: 1.6rem;">{{ cat.nome }}</h3>
-                  <p class="section-subtitle">"{{ cat.descricao }}"</p>
-                  
-                  <hr class="card-inner-divider">
-
-                  @if (cat.vencedor) {
-                    <div class="winner-name-xl" style="font-size: 2.2rem;">{{ cat.vencedor.nome }}</div>
-                    <div class="winner-votes-xl" style="font-size: 1.2rem;">
-                      <span>🥇</span> {{ cat.vencedor.votos }} votos computados
-                    </div>
-                  } @else {
-                    <div class="winner-name-xl" style="color: var(--color-muted); font-size: 1.3rem;">Nenhum voto computado</div>
-                  }
-                </div>
-
-              </div>
-            </div>
-          }
-        </div>
       }
     } 
 

@@ -326,30 +326,6 @@
   background-color: #40444b;
 }
 
-/* --- CONFIGURAÇÃO EXCLUSIVA DO CONTEXTO DO PDF --- */
-.pdf-hidden-container {
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 0;
-  overflow: hidden;
-  width: 780px;
-  background-color: #202225;
-}
-
-.pdf-header {
-  text-align: center;
-  margin-bottom: 30px;
-  border-bottom: 2px solid var(--color-gold);
-  padding-bottom: 15px;
-}
-
-.pdf-header h1 { color: #ffffff; margin: 0; font-size: 2.5rem; }
-.pdf-header p { color: var(--color-gold); margin: 5px 0 0 0; font-weight: bold; font-size: 1.2rem; }
-.pdf-card-layout { margin-bottom: 25px; min-height: auto; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--color-gold); border-radius: 8px;}
-.pdf-thumb { height: 200px; }
-.pdf-thumb-placeholder { height: 200px; font-size: 4rem; }
 
 /* Card do candidato em formato de linha */
 .candidate-row-card {
