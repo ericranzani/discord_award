@@ -29,7 +29,7 @@ origins = [
 # Configuração do Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # Permite as URLs do Angular
+    allow_origins=["*"],            # Permite as URLs do Angular
     allow_credentials=True,
     allow_methods=["*"],              # Permite todos os métodos (GET, POST, etc.)
     allow_headers=["*"],              # Permite todos os cabeçalhos
