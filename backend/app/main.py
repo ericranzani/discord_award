@@ -47,7 +47,7 @@ def rotina_limpeza_24h():
     while True:
         # 86400 segundos = 24 horas
         # Dica para testes rápidos: mude para 30 (30 segundos) para ver a mágica acontecer!
-        time.sleep(30) 
+        time.sleep(86400) 
         
         print("[Limpeza Automática] Iniciando faxina diária no sistema...")
         try:
