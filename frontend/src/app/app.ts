@@ -106,9 +106,11 @@ export class AppComponent implements OnInit {
   }
 
   onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
-      this.fotoSelecionada = file;
+    const element = event.currentTarget as HTMLInputElement;
+    let fileList: FileList | null = element.files;
+    
+    if (fileList && fileList.length > 0) {
+      this.fotoSelecionada = fileList[0];
     }
   }
 

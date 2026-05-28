@@ -199,7 +199,7 @@ def criar_candidato_com_foto(
             buffer.write(file.file.read())
             
         # Atualiza o candidato com a URL da imagem correspondente
-        url_publica = f"http://localhost:8000/static/{novo_nome_arquivo}"
+        url_publica = f"http://discord-awards-api.onrender.com/static/{novo_nome_arquivo}"
         db_candidato.imagem_url = url_publica
         db.commit()
         db.refresh(db_candidato)
